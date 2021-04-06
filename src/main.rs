@@ -40,8 +40,8 @@ struct Opt {
         short,
         long,
         parse(from_os_str),
-        help = "Yaml file describing the initial state of the system. \
-                For the valid format see https://github.com/korommatyi/grn_simulator/wiki."
+        help = "Where the write the output. The output is a csv file with the format described on \
+                https://github.com/korommatyi/grn_simulator/wiki."
     )]
     output: PathBuf,
 }
@@ -52,8 +52,8 @@ struct Specimen {
     quantity: u64,
 }
 
-impl From<&Yaml> for Specimen {
-    fn from(item: &Yaml) -> Self {
+impl From<Yaml> for Specimen {
+    fn from(item: Yaml) -> Self {
         let hash = item.as_hash().unwrap();
         let name = hash[&Yaml::String("name".to_string())]
             .as_str()
@@ -75,22 +75,26 @@ struct Reaction {
     outputs: Vec<Specimen>,
 }
 
-impl From<&Yaml> for Reaction {
-    fn from(item: &Yaml) -> Self {
-        let hash = item.as_hash().unwrap();
+impl From<Yaml> for Reaction {
+    fn from(item: Yaml) -> Self {
+        let mut hash = item.into_hash().unwrap();
         let reaction_parameter = hash[&Yaml::String("reaction_parameter".to_string())]
             .as_f64()
             .unwrap();
-        let inputs = hash[&Yaml::String("inputs".to_string())]
-            .as_vec()
+        let inputs = hash
+            .remove(&Yaml::String("inputs".to_string()))
             .unwrap()
-            .iter()
+            .into_vec()
+            .unwrap()
+            .into_iter()
             .map(|x| x.into())
             .collect();
-        let outputs = hash[&Yaml::String("outputs".to_string())]
-            .as_vec()
+        let outputs = hash
+            .remove(&Yaml::String("outputs".to_string()))
             .unwrap()
-            .iter()
+            .into_vec()
+            .unwrap()
+            .into_iter()
             .map(|x| x.into())
             .collect();
         return Reaction {
@@ -112,9 +116,9 @@ fn main() {
             .into_iter()
             .nth(0)
             .unwrap()
-            .as_vec()
+            .into_vec()
             .unwrap()
-            .iter()
+            .into_iter()
             .map(|x| x.into())
             .collect();
     println!("{:?}", reactions_content);
