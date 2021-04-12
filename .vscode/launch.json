@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'grn_simulator'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=grn_simulator",
+                    "--package=grn_simulator"
+                ],
+                "filter": {
+                    "name": "grn_simulator",
+                    "kind": "bin"
+                }
+            },
+            "args": [   "-r","resources/test/reactions.yaml",
+                        "-i","resources/test/initial_state.yaml",
+                        "-o","debug_out.csv"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'grn_simulator'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=grn_simulator",
+                    "--package=grn_simulator"
+                ],
+                "filter": {
+                    "name": "grn_simulator",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
