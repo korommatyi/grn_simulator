@@ -1,0 +1,9 @@
+- reaction_parameter: 0.2
+  inputs:
+    - name: O2
+      quantity: 1
+    - name: H2
+      quantity: 2
+  outputs:
+    - name: H2O
+      quantity: 2
