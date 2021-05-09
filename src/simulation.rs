@@ -1,18 +1,3 @@
-// intermediate data formats for reading input
-#[derive(Debug)]
-pub struct Specimen {
-    pub name: String,
-    pub quantity: u64,
-}
-
-#[derive(Debug)]
-pub struct Reaction {
-    pub reaction_parameter: f64,
-    pub inputs: Vec<Specimen>,
-    pub outputs: Vec<Specimen>,
-}
-
-// real simulation formats
 #[derive(Debug)]
 pub struct Reactant {
     pub index: usize,
@@ -26,13 +11,13 @@ pub struct Product {
 }
 
 #[derive(Debug)]
-pub struct RealReaction {
+pub struct Reaction {
     pub reaction_parameter: f64,
     pub reactants: Vec<Reactant>,
     pub products: Vec<Product>,
 }
 
-impl RealReaction {
+impl Reaction {
     pub fn propensity(&self, state: &Vec<u64>) -> f64 {
         let mut propensity = self.reaction_parameter;
 
@@ -60,7 +45,7 @@ pub struct System {
     pub state: Vec<u64>,
     pub idx_to_name: Vec<String>,
     pub name_to_idx: std::collections::HashMap<String, usize>,
-    pub reactions: Vec<RealReaction>,
+    pub reactions: Vec<Reaction>,
 }
 
 impl System {

@@ -1,51 +1,7 @@
-use crate::simulation::{Product, Reactant, Reaction, RealReaction, Specimen, System};
+use crate::simulation::{Product, Reactant, Reaction, System};
 use std::fs;
 use std::path::PathBuf;
 use yaml_rust::{Yaml, YamlLoader};
-
-impl From<Yaml> for Specimen {
-    fn from(item: Yaml) -> Self {
-        let hash = item.as_hash().unwrap();
-        let name = hash[&Yaml::String("name".to_string())]
-            .as_str()
-            .unwrap()
-            .to_string();
-        let quantity = hash[&Yaml::String("quantity".to_string())]
-            .as_i64()
-            .unwrap() as u64;
-        Specimen { name, quantity }
-    }
-}
-
-impl From<Yaml> for Reaction {
-    fn from(item: Yaml) -> Self {
-        let mut hash = item.into_hash().unwrap();
-        let reaction_parameter = hash[&Yaml::String("reaction_parameter".to_string())]
-            .as_f64()
-            .unwrap();
-        let inputs = hash
-            .remove(&Yaml::String("inputs".to_string()))
-            .unwrap()
-            .into_vec()
-            .unwrap()
-            .into_iter()
-            .map(|x| x.into())
-            .collect();
-        let outputs = hash
-            .remove(&Yaml::String("outputs".to_string()))
-            .unwrap()
-            .into_vec()
-            .unwrap()
-            .into_iter()
-            .map(|x| x.into())
-            .collect();
-        return Reaction {
-            reaction_parameter,
-            inputs,
-            outputs,
-        };
-    }
-}
 
 pub fn load_system(reactions_filename: &PathBuf, ini_state_filename: &PathBuf) -> System {
     let mut system = System::new();
@@ -123,7 +79,7 @@ pub fn load_system(reactions_filename: &PathBuf, ini_state_filename: &PathBuf) -
             });
         }
 
-        system.reactions.push(RealReaction {
+        system.reactions.push(Reaction {
             reaction_parameter,
             reactants,
             products,
