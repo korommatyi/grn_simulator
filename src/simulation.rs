@@ -1,4 +1,3 @@
-
 // intermediate data formats for reading input
 #[derive(Debug)]
 pub struct Specimen {
@@ -12,11 +11,6 @@ pub struct Reaction {
     pub inputs: Vec<Specimen>,
     pub outputs: Vec<Specimen>,
 }
-
-pub type State = Vec<Specimen>;
-
-pub type Reactions = Vec<Reaction>;
-
 
 // real simulation formats
 #[derive(Debug)]
@@ -41,7 +35,7 @@ pub struct RealReaction {
 impl RealReaction {
     pub fn propensity(&self, state: &Vec<u64>) -> f64 {
         let mut propensity = self.reaction_parameter;
-        
+
         for reactant in &self.reactants {
             propensity *= binomial(state[reactant.index], reactant.quantity) as f64;
         }
@@ -54,9 +48,9 @@ fn binomial(n: u64, k: u64) -> u64 {
     let mut coeff = n;
 
     // assumption: n is small enough
-    for i in 1..(k-1) {
-        coeff *= (n-i);
-        coeff /= i+1;
+    for i in 1..(k - 1) {
+        coeff *= n - i;
+        coeff /= i + 1;
     }
     return coeff;
 }
@@ -70,12 +64,28 @@ pub struct System {
 }
 
 impl System {
-    pub fn new () -> System {
+    pub fn new() -> System {
         System {
             state: Vec::new(),
             idx_to_name: Vec::new(),
             name_to_idx: std::collections::HashMap::new(),
-            reactions: Vec::new()
+            reactions: Vec::new(),
         }
     }
+
+    pub fn serialize_state(&self) -> String {
+        self.state
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(",")
+    }
+}
+
+#[test]
+fn test_serialize_state() {
+    let mut system = System::new();
+    system.state = vec![0u64, 1u64, 1000u64];
+    let printed_line = system.serialize_state();
+    assert_eq!(printed_line.as_str(), "0,1,1000");
 }

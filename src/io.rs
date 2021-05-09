@@ -1,7 +1,7 @@
-use yaml_rust::{Yaml,YamlLoader};
-use std::path::PathBuf;
+use crate::simulation::{Product, Reactant, Reaction, RealReaction, Specimen, System};
 use std::fs;
-use crate::simulation::{Specimen, Reaction, Reactions, State, System, RealReaction, Reactant, Product};
+use std::path::PathBuf;
+use yaml_rust::{Yaml, YamlLoader};
 
 impl From<Yaml> for Specimen {
     fn from(item: Yaml) -> Self {
@@ -47,36 +47,24 @@ impl From<Yaml> for Reaction {
     }
 }
 
-pub fn load_reactions(filename: &PathBuf) -> Reactions {
-    YamlLoader::load_from_str(&fs::read_to_string(filename).unwrap())
-        .unwrap()
-        .into_iter()
-        .nth(0)
-        .unwrap()
-        .into_vec()
-        .unwrap()
-        .into_iter()
-        .map(|x| x.into())
-        .collect()
-}
-
-
-
 pub fn load_system(reactions_filename: &PathBuf, ini_state_filename: &PathBuf) -> System {
     let mut system = System::new();
 
-    let name_quantity_tuples = YamlLoader::load_from_str(&fs::read_to_string(ini_state_filename).unwrap())
-        .unwrap()
-        .into_iter()
-        .nth(0)
-        .unwrap()
-        .into_hash()
-        .unwrap()
-        .into_iter()
-        .map(|(x, y)| (x.into_string().unwrap(), y.into_i64().unwrap() as u64));
+    let name_quantity_tuples =
+        YamlLoader::load_from_str(&fs::read_to_string(ini_state_filename).unwrap())
+            .unwrap()
+            .into_iter()
+            .nth(0)
+            .unwrap()
+            .into_hash()
+            .unwrap()
+            .into_iter()
+            .map(|(x, y)| (x.into_string().unwrap(), y.into_i64().unwrap() as u64));
 
     for (name, quantity) in name_quantity_tuples {
-        system.name_to_idx.insert(name.clone(), system.idx_to_name.len());
+        system
+            .name_to_idx
+            .insert(name.clone(), system.idx_to_name.len());
         system.idx_to_name.push(name);
         system.state.push(quantity);
     }
@@ -110,8 +98,10 @@ pub fn load_system(reactions_filename: &PathBuf, ini_state_filename: &PathBuf) -
             let quantity = input_hash[&Yaml::String("quantity".to_string())]
                 .as_i64()
                 .unwrap() as u64;
-            reactants.push(
-                Reactant{index: system.name_to_idx[&name], quantity});
+            reactants.push(Reactant {
+                index: system.name_to_idx[&name],
+                quantity,
+            });
         }
         let outputs = hash
             .remove(&Yaml::String("outputs".to_string()))
@@ -127,23 +117,20 @@ pub fn load_system(reactions_filename: &PathBuf, ini_state_filename: &PathBuf) -
             let quantity = output_hash[&Yaml::String("quantity".to_string())]
                 .as_i64()
                 .unwrap() as u64;
-            products.push(
-                Product{index: system.name_to_idx[&name], quantity});
+            products.push(Product {
+                index: system.name_to_idx[&name],
+                quantity,
+            });
         }
 
-        system.reactions.push(RealReaction{reaction_parameter, reactants, products});
+        system.reactions.push(RealReaction {
+            reaction_parameter,
+            reactants,
+            products,
+        });
     }
 
     return system;
-}
-
-fn print_state(system: &System) -> String {
-    let mut line_str = String::new();
-    for quantity in system.state.iter() {
-        line_str.push_str(format!("{};", quantity).as_str());
-    }
-
-    return line_str;
 }
 
 #[test]
@@ -180,12 +167,4 @@ fn test_load_system_from_yaml() {
     assert_eq!(system.state[idx_of_o2], 2);
     assert_eq!(system.state[idx_of_h2], 4);
     assert_eq!(system.state[idx_of_h2o], 0);
-}
-
-#[test]
-fn test_print_state() {
-    let mut system = System::new();
-    system.state = vec![0u64, 1u64, 1000u64];
-    let printed_line = print_state(&system);
-    assert_eq!(printed_line.as_str(), "0;1;1000;");
 }

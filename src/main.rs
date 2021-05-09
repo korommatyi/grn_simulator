@@ -1,10 +1,8 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-
 mod io;
 mod simulation;
-
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "GRN simulator", about = "Gene Regulatory Network Simulator")]
