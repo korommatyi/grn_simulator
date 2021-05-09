@@ -1,7 +1,6 @@
 use yaml_rust::{Yaml,YamlLoader};
 use std::path::PathBuf;
 use std::fs;
-use std::collections::HashMap;
 use crate::simulation::{Specimen, Reaction, Reactions, State, System, RealReaction, Reactant, Product};
 
 impl From<Yaml> for Specimen {
@@ -136,4 +135,57 @@ pub fn load_system(reactions_filename: &PathBuf, ini_state_filename: &PathBuf) -
     }
 
     return system;
+}
+
+fn print_state(system: &System) -> String {
+    let mut line_str = String::new();
+    for quantity in system.state.iter() {
+        line_str.push_str(format!("{};", quantity).as_str());
+    }
+
+    return line_str;
+}
+
+#[test]
+fn test_load_system_from_yaml() {
+    let initial_state_file: PathBuf = "resources/test/initial_state.yaml".into();
+    let reactions_file: PathBuf = "resources/test/reactions.yaml".into();
+
+    let system = load_system(&reactions_file, &initial_state_file);
+
+    let idx_of_o2 = *system.name_to_idx.get("O2").expect("no O2 in system?");
+    let idx_of_h2 = *system.name_to_idx.get("H2").expect("no H2 in system?");
+    let idx_of_h2o = *system.name_to_idx.get("H2O").expect("no H2O in system?");
+
+    // idx - name mapping is consistent
+    assert_eq!(system.idx_to_name[idx_of_o2], "O2");
+    assert_eq!(system.idx_to_name[idx_of_h2], "H2");
+    assert_eq!(system.idx_to_name[idx_of_h2o], "H2O");
+
+    // reactions
+    assert_eq!(system.reactions.len(), 1);
+    let first_reaction = &system.reactions[0];
+    assert_eq!(first_reaction.reaction_parameter, 0.2);
+    assert_eq!(first_reaction.reactants.len(), 2);
+    assert_eq!(first_reaction.products.len(), 1);
+    assert_eq!(first_reaction.reactants[0].index, idx_of_o2);
+    assert_eq!(first_reaction.reactants[0].quantity, 1);
+    assert_eq!(first_reaction.reactants[1].index, idx_of_h2);
+    assert_eq!(first_reaction.reactants[1].quantity, 2);
+    assert_eq!(first_reaction.products[0].index, idx_of_h2o);
+    assert_eq!(first_reaction.products[0].quantity, 2);
+
+    // initial state
+    assert_eq!(system.state.len(), 3);
+    assert_eq!(system.state[idx_of_o2], 2);
+    assert_eq!(system.state[idx_of_h2], 4);
+    assert_eq!(system.state[idx_of_h2o], 0);
+}
+
+#[test]
+fn test_print_state() {
+    let mut system = System::new();
+    system.state = vec![0u64, 1u64, 1000u64];
+    let printed_line = print_state(&system);
+    assert_eq!(printed_line.as_str(), "0;1;1000;");
 }
