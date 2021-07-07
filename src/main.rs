@@ -3,6 +3,7 @@ use structopt::StructOpt;
 
 mod io;
 mod simulation;
+mod gillespie_simulator;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "GRN simulator", about = "Gene Regulatory Network Simulator")]
