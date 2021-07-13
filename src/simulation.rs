@@ -47,7 +47,7 @@ pub struct System {
     pub name_to_idx: std::collections::HashMap<String, usize>,
     pub reactions: Vec<Reaction>,
     pub time_of_last_reaction: f64,
-    pub last_reaction: usize
+    pub last_reaction: usize,
 }
 
 impl System {
@@ -58,7 +58,7 @@ impl System {
             name_to_idx: std::collections::HashMap::new(),
             reactions: Vec::new(),
             time_of_last_reaction: 0.0,
-            last_reaction: 0
+            last_reaction: 0,
         }
     }
 
@@ -91,16 +91,36 @@ impl System {
 
 #[test]
 fn test_trigger_reaction_valid() {
-    let mut system = System{
+    let mut system = System {
         state: vec![2u64, 2u64, 2u64],
         idx_to_name: vec!["o2".to_string(), "h2".to_string(), "h2o".to_string()],
-        name_to_idx: [("o2".to_string(), 0), ("h2".to_string(), 1), ("h2o".to_string(), 2)].iter().cloned().collect(),
-        reactions: vec![Reaction{
+        name_to_idx: [
+            ("o2".to_string(), 0),
+            ("h2".to_string(), 1),
+            ("h2o".to_string(), 2),
+        ]
+        .iter()
+        .cloned()
+        .collect(),
+        reactions: vec![Reaction {
             reaction_parameter: 0.1,
-            reactants: vec![Reactant{index: 0, quantity:1}, Reactant{index: 1, quantity: 2}],
-            products: vec![Product{index: 2, quantity: 2}]}],
+            reactants: vec![
+                Reactant {
+                    index: 0,
+                    quantity: 1,
+                },
+                Reactant {
+                    index: 1,
+                    quantity: 2,
+                },
+            ],
+            products: vec![Product {
+                index: 2,
+                quantity: 2,
+            }],
+        }],
         time_of_last_reaction: 0.0,
-        last_reaction: 1000
+        last_reaction: 1000,
     };
 
     let reaction_time = 0.1;
@@ -109,23 +129,43 @@ fn test_trigger_reaction_valid() {
 
     assert_eq!(system.last_reaction, reaction_index);
     assert_eq!(system.time_of_last_reaction, reaction_time);
-    assert_eq!(system.state, vec![1,0,4]);
+    assert_eq!(system.state, vec![1, 0, 4]);
 }
 
 #[test]
 #[should_panic]
 fn test_trigger_reaction_not_enough_reactants() {
     // tries to trigger a reaction, for which we don't have enough input
-    let mut system = System{
+    let mut system = System {
         state: vec![0u64, 0u64, 0u64],
         idx_to_name: vec!["o2".to_string(), "h2".to_string(), "h2o".to_string()],
-        name_to_idx: [("o2".to_string(), 0), ("h2".to_string(), 1), ("h2o".to_string(), 2)].iter().cloned().collect(),
-        reactions: vec![Reaction{
+        name_to_idx: [
+            ("o2".to_string(), 0),
+            ("h2".to_string(), 1),
+            ("h2o".to_string(), 2),
+        ]
+        .iter()
+        .cloned()
+        .collect(),
+        reactions: vec![Reaction {
             reaction_parameter: 0.1,
-            reactants: vec![Reactant{index: 0, quantity:1}, Reactant{index: 1, quantity: 2}],
-            products: vec![Product{index: 2, quantity: 2}]}],
+            reactants: vec![
+                Reactant {
+                    index: 0,
+                    quantity: 1,
+                },
+                Reactant {
+                    index: 1,
+                    quantity: 2,
+                },
+            ],
+            products: vec![Product {
+                index: 2,
+                quantity: 2,
+            }],
+        }],
         time_of_last_reaction: 0.0,
-        last_reaction: 1000
+        last_reaction: 1000,
     };
 
     let reaction_time = 0.1;
@@ -137,16 +177,36 @@ fn test_trigger_reaction_not_enough_reactants() {
 #[should_panic]
 fn test_trigger_reaction_invalid_reaction_index() {
     // tries to trigger a reaction with an invalid index
-    let mut system = System{
+    let mut system = System {
         state: vec![2u64, 2u64, 2u64],
         idx_to_name: vec!["o2".to_string(), "h2".to_string(), "h2o".to_string()],
-        name_to_idx: [("o2".to_string(), 0), ("h2".to_string(), 1), ("h2o".to_string(), 2)].iter().cloned().collect(),
-        reactions: vec![Reaction{
+        name_to_idx: [
+            ("o2".to_string(), 0),
+            ("h2".to_string(), 1),
+            ("h2o".to_string(), 2),
+        ]
+        .iter()
+        .cloned()
+        .collect(),
+        reactions: vec![Reaction {
             reaction_parameter: 0.1,
-            reactants: vec![Reactant{index: 0, quantity:1}, Reactant{index: 1, quantity: 2}],
-            products: vec![Product{index: 2, quantity: 2}]}],
+            reactants: vec![
+                Reactant {
+                    index: 0,
+                    quantity: 1,
+                },
+                Reactant {
+                    index: 1,
+                    quantity: 2,
+                },
+            ],
+            products: vec![Product {
+                index: 2,
+                quantity: 2,
+            }],
+        }],
         time_of_last_reaction: 0.0,
-        last_reaction: 1000
+        last_reaction: 1000,
     };
 
     let reaction_time = 0.1;
@@ -158,16 +218,36 @@ fn test_trigger_reaction_invalid_reaction_index() {
 #[should_panic]
 fn test_trigger_reaction_in_the_past() {
     // tries to trigger a reaction before the last recorded reaction
-    let mut system = System{
+    let mut system = System {
         state: vec![2u64, 2u64, 2u64],
         idx_to_name: vec!["o2".to_string(), "h2".to_string(), "h2o".to_string()],
-        name_to_idx: [("o2".to_string(), 0), ("h2".to_string(), 1), ("h2o".to_string(), 2)].iter().cloned().collect(),
-        reactions: vec![Reaction{
+        name_to_idx: [
+            ("o2".to_string(), 0),
+            ("h2".to_string(), 1),
+            ("h2o".to_string(), 2),
+        ]
+        .iter()
+        .cloned()
+        .collect(),
+        reactions: vec![Reaction {
             reaction_parameter: 0.1,
-            reactants: vec![Reactant{index: 0, quantity:1}, Reactant{index: 1, quantity: 2}],
-            products: vec![Product{index: 2, quantity: 2}]}],
+            reactants: vec![
+                Reactant {
+                    index: 0,
+                    quantity: 1,
+                },
+                Reactant {
+                    index: 1,
+                    quantity: 2,
+                },
+            ],
+            products: vec![Product {
+                index: 2,
+                quantity: 2,
+            }],
+        }],
         time_of_last_reaction: 50.0,
-        last_reaction: 1000
+        last_reaction: 1000,
     };
 
     let reaction_time = 0.1;
