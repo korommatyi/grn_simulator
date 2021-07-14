@@ -1,4 +1,4 @@
-use crate::simulation::{Product, Reactant, Reaction, System};
+use crate::system::{Product, Reactant, Reaction, System};
 use std::fs;
 use std::path::PathBuf;
 use yaml_rust::{Yaml, YamlLoader};
