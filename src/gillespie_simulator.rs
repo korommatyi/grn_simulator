@@ -95,6 +95,7 @@ fn create_default_system() -> System {
         last_reaction: 1000,
     };
 }
+
 #[test]
 pub fn test_step_r_1_and_r_2_are_zero() {
     let mut sim = GillespieSimulator {
