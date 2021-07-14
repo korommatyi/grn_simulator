@@ -1,4 +1,4 @@
-use crate::simulation::System;
+use crate::system::System;
 
 // This implementation uses the notations of the following publication:
 // doi: 10.1146/annurev.physchem.58.032806.104637
@@ -10,7 +10,6 @@ struct GillespieSimulator {
 
 impl GillespieSimulator {
     pub fn step(&mut self) {
-        // a_0 is the sum of propensities in the source paper
         let a: Vec<f64> = self
             .system
             .reactions
@@ -44,7 +43,7 @@ impl GillespieSimulator {
 
 #[test]
 pub fn test_step_r_1_and_r_2_are_zero() {
-    use crate::simulation::{Product, Reactant, Reaction, System};
+    use crate::system::{Product, Reactant, Reaction, System};
 
     let mut sim = GillespieSimulator {
         system: System {
@@ -58,23 +57,42 @@ pub fn test_step_r_1_and_r_2_are_zero() {
             .iter()
             .cloned()
             .collect(),
-            reactions: vec![Reaction {
-                reaction_parameter: 0.1,
-                reactants: vec![
-                    Reactant {
-                        index: 0,
-                        quantity: 1,
-                    },
-                    Reactant {
-                        index: 1,
+            reactions: vec![
+                Reaction {
+                    reaction_parameter: 0.1,
+                    reactants: vec![
+                        Reactant {
+                            index: 0,
+                            quantity: 1,
+                        },
+                        Reactant {
+                            index: 1,
+                            quantity: 2,
+                        },
+                    ],
+                    products: vec![Product {
+                        index: 2,
                         quantity: 2,
-                    },
-                ],
-                products: vec![Product {
-                    index: 2,
-                    quantity: 2,
-                }],
-            }],
+                    }],
+                },
+                Reaction {
+                    reaction_parameter: 0.01,
+                    reactants: vec![Reactant {
+                        index: 2,
+                        quantity: 2,
+                    }],
+                    products: vec![
+                        Product {
+                            index: 0,
+                            quantity: 1,
+                        },
+                        Product {
+                            index: 1,
+                            quantity: 2,
+                        },
+                    ],
+                },
+            ],
             time_of_last_reaction: 0.0,
             last_reaction: 1000,
         },
@@ -82,11 +100,15 @@ pub fn test_step_r_1_and_r_2_are_zero() {
     };
 
     sim.step();
+
+    assert_eq!(sim.system.time_of_last_reaction, std::f64::INFINITY);
+    assert_eq!(sim.system.last_reaction, 0);
+    assert_eq!(sim.system.state, vec![1, 0, 4]);
 }
 
 #[test]
 pub fn test_step_r_1_and_r_2_are_one() {
-    use crate::simulation::{Product, Reactant, Reaction, System};
+    use crate::system::{Product, Reactant, Reaction, System};
 
     let mut sim = GillespieSimulator {
         system: System {
@@ -100,23 +122,42 @@ pub fn test_step_r_1_and_r_2_are_one() {
             .iter()
             .cloned()
             .collect(),
-            reactions: vec![Reaction {
-                reaction_parameter: 0.1,
-                reactants: vec![
-                    Reactant {
-                        index: 0,
-                        quantity: 1,
-                    },
-                    Reactant {
-                        index: 1,
+            reactions: vec![
+                Reaction {
+                    reaction_parameter: 0.1,
+                    reactants: vec![
+                        Reactant {
+                            index: 0,
+                            quantity: 1,
+                        },
+                        Reactant {
+                            index: 1,
+                            quantity: 2,
+                        },
+                    ],
+                    products: vec![Product {
+                        index: 2,
                         quantity: 2,
-                    },
-                ],
-                products: vec![Product {
-                    index: 2,
-                    quantity: 2,
-                }],
-            }],
+                    }],
+                },
+                Reaction {
+                    reaction_parameter: 0.01,
+                    reactants: vec![Reactant {
+                        index: 2,
+                        quantity: 2,
+                    }],
+                    products: vec![
+                        Product {
+                            index: 0,
+                            quantity: 1,
+                        },
+                        Product {
+                            index: 1,
+                            quantity: 2,
+                        },
+                    ],
+                },
+            ],
             time_of_last_reaction: 0.0,
             last_reaction: 1000,
         },
@@ -124,4 +165,8 @@ pub fn test_step_r_1_and_r_2_are_one() {
     };
 
     sim.step();
+
+    assert_eq!(sim.system.time_of_last_reaction, 0.0);
+    assert_eq!(sim.system.last_reaction, 1);
+    assert_eq!(sim.system.state, vec![3, 4, 0]);
 }
