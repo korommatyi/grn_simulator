@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 structopt = { version = "0.3" }
 yaml-rust = { version = "0.4", git = "https://github.com/chyh1990/yaml-rust.git" }
+rand = { version = "0.8" }
+rand_chacha = { version = "0.3" }

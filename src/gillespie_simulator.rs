@@ -3,12 +3,12 @@ use crate::system::System;
 // This implementation uses the notations of the following publication:
 // doi: 10.1146/annurev.physchem.58.032806.104637
 
-struct GillespieSimulator<F: Fn() -> f64> {
-    system: System,
+pub struct GillespieSimulator<'a, F: Fn() -> f64> {
+    system: &'a System,
     random: F,
 }
 
-impl<F: Fn() -> f64> GillespieSimulator<F> {
+impl<'a, F: Fn() -> f64> GillespieSimulator<'a, F> {
     pub fn step(&mut self) {
         let a: Vec<f64> = self
             .system
@@ -43,7 +43,7 @@ impl<F: Fn() -> f64> GillespieSimulator<F> {
 
 #[cfg(test)]
 fn create_default_system() -> System {
-    use crate::system::{Product, Reactant, Reaction, System};
+    use crate::system::{Product, Reactant, Reaction};
     return System {
         state: vec![2u64, 2u64, 2u64],
         idx_to_name: vec!["o2".to_string(), "h2".to_string(), "h2o".to_string()],
@@ -99,7 +99,7 @@ fn create_default_system() -> System {
 #[test]
 pub fn test_step_r_1_and_r_2_are_zero() {
     let mut sim = GillespieSimulator {
-        system: create_default_system(),
+        system: &create_default_system(),
         random: || 0.0,
     };
 
@@ -113,7 +113,7 @@ pub fn test_step_r_1_and_r_2_are_zero() {
 #[test]
 pub fn test_step_r_1_and_r_2_are_one() {
     let mut sim = GillespieSimulator {
-        system: create_default_system(),
+        system: &create_default_system(),
         random: || 1.0,
     };
 
@@ -133,14 +133,14 @@ pub fn test_decision_boundary() {
         / (condensation.propensity(&system.state) + hydrolysis.propensity(&system.state));
 
     let mut sim = GillespieSimulator {
-        system: create_default_system(),
+        system: &create_default_system(),
         random: || -> f64 { decision_boundary - std::f64::EPSILON },
     };
     sim.step();
     assert_eq!(sim.system.last_reaction, 0);
 
     let mut sim = GillespieSimulator {
-        system: create_default_system(),
+        system: &create_default_system(),
         random: || -> f64 { decision_boundary + std::f64::EPSILON },
     };
     sim.step();
