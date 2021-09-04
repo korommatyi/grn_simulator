@@ -55,13 +55,18 @@ fn main() {
 
     let mut system = io::load_system(&opt.reactions, &opt.initial_state);
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(opt.seed);
-    gillespie_simulator::gillespie_step(&mut system, &mut || rng.gen::<f64>());
-    let output = output_formatter::CSVFormatter {
-        system: &system,
+    let mut output = output_formatter::CSVFormatter {
         output: File::create(&opt.output).expect("Cannot create output file."),
     };
-    // create simulator from cli args
-    // call simulator
+
+    output.start(&system);
+
+    for _ in 1..100 {
+        gillespie_simulator::gillespie_step(&mut system, &mut || rng.gen::<f64>());
+        output.write_current_state(&system);
+    }
+
+    output.finish(&system);
 
     println!("System:");
     println!("{:?}", system);
