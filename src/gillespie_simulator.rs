@@ -3,42 +3,33 @@ use crate::system::System;
 // This implementation uses the notations of the following publication:
 // doi: 10.1146/annurev.physchem.58.032806.104637
 
-pub struct GillespieSimulator<'a, F: Fn() -> f64> {
-    system: &'a System,
-    random: F,
-}
+pub fn gillespie_step<F: FnMut() -> f64>(system: &mut System, random: &mut F) {
+    let a: Vec<f64> = system
+        .reactions
+        .iter()
+        .map(|x| x.propensity(&system.state))
+        .collect();
+    let a_0: f64 = a.iter().sum();
 
-impl<'a, F: Fn() -> f64> GillespieSimulator<'a, F> {
-    pub fn step(&mut self) {
-        let a: Vec<f64> = self
-            .system
-            .reactions
-            .iter()
-            .map(|x| x.propensity(&self.system.state))
-            .collect();
-        let a_0: f64 = a.iter().sum();
+    let r_1 = (random)();
+    let r_2 = (random)();
 
-        let r_1 = (self.random)();
-        let r_2 = (self.random)();
+    let tau = (1.0 / r_1).ln() / a_0;
 
-        let tau = (1.0 / r_1).ln() / a_0;
+    let mut j: usize = system.reactions.len() - 1;
+    let target_value = r_2 * a_0;
 
-        let mut j: usize = self.system.reactions.len() - 1;
-        let target_value = r_2 * a_0;
-
-        let mut running_sum = 0.0;
-        for (index, propensity) in a.iter().enumerate() {
-            running_sum += propensity;
-            if running_sum > target_value {
-                j = index;
-                break;
-            }
+    let mut running_sum = 0.0;
+    for (index, propensity) in a.iter().enumerate() {
+        running_sum += propensity;
+        if running_sum > target_value {
+            j = index;
+            break;
         }
-        let j = j; // don't allow mutation after this point
-
-        self.system
-            .trigger_reaction(self.system.time_of_last_reaction + tau, j);
     }
+    let j = j; // don't allow mutation after this point
+
+    system.trigger_reaction(system.time_of_last_reaction + tau, j);
 }
 
 #[cfg(test)]
@@ -98,51 +89,42 @@ fn create_default_system() -> System {
 
 #[test]
 pub fn test_step_r_1_and_r_2_are_zero() {
-    let mut sim = GillespieSimulator {
-        system: &create_default_system(),
-        random: || 0.0,
-    };
+    let system = create_default_system();
 
-    sim.step();
+    gillespie_step(&mut system, &mut || 0.0);
 
-    assert_eq!(sim.system.time_of_last_reaction, std::f64::INFINITY);
-    assert_eq!(sim.system.last_reaction, 0);
-    assert_eq!(sim.system.state, vec![1, 0, 4]);
+    assert_eq!(system.time_of_last_reaction, std::f64::INFINITY);
+    assert_eq!(system.last_reaction, 0);
+    assert_eq!(system.state, vec![1, 0, 4]);
 }
 
 #[test]
 pub fn test_step_r_1_and_r_2_are_one() {
-    let mut sim = GillespieSimulator {
-        system: &create_default_system(),
-        random: || 1.0,
-    };
+    let system = create_default_system();
 
-    sim.step();
+    gillespie_step(&mut system, &mut || 1.0);
 
-    assert_eq!(sim.system.time_of_last_reaction, 0.0);
-    assert_eq!(sim.system.last_reaction, 1);
-    assert_eq!(sim.system.state, vec![3, 4, 0]);
+    assert_eq!(system.time_of_last_reaction, 0.0);
+    assert_eq!(system.last_reaction, 1);
+    assert_eq!(system.state, vec![3, 4, 0]);
 }
 
 #[test]
 pub fn test_decision_boundary() {
-    let system = create_default_system();
-    let condensation = system.reactions.get(0).unwrap();
-    let hydrolysis = system.reactions.get(1).unwrap();
-    let decision_boundary: f64 = condensation.propensity(&system.state)
-        / (condensation.propensity(&system.state) + hydrolysis.propensity(&system.state));
+    let system1 = create_default_system();
+    let condensation = system1.reactions.get(0).unwrap();
+    let hydrolysis = system1.reactions.get(1).unwrap();
+    let decision_boundary: f64 = condensation.propensity(&system1.state)
+        / (condensation.propensity(&system1.state) + hydrolysis.propensity(&system1.state));
 
-    let mut sim = GillespieSimulator {
-        system: &create_default_system(),
-        random: || -> f64 { decision_boundary - std::f64::EPSILON },
-    };
-    sim.step();
-    assert_eq!(sim.system.last_reaction, 0);
+    gillespie_step(&mut system1, &mut || -> f64 {
+        decision_boundary - std::f64::EPSILON
+    });
+    assert_eq!(system1.last_reaction, 0);
 
-    let mut sim = GillespieSimulator {
-        system: &create_default_system(),
-        random: || -> f64 { decision_boundary + std::f64::EPSILON },
-    };
-    sim.step();
-    assert_eq!(sim.system.last_reaction, 1);
+    let system2 = create_default_system();
+    gillespie_step(&mut system2, &mut || -> f64 {
+        decision_boundary + std::f64::EPSILON
+    });
+    assert_eq!(system2.last_reaction, 1);
 }

@@ -53,12 +53,9 @@ struct Opt {
 fn main() {
     let opt = Opt::from_args();
 
-    let system = io::load_system(&opt.reactions, &opt.initial_state);
+    let mut system = io::load_system(&opt.reactions, &opt.initial_state);
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(opt.seed);
-    let algorithm = gillespie_simulator::GillespieSimulator {
-        system: &system,
-        random: || rng.gen::<f64>(),
-    };
+    gillespie_simulator::gillespie_step(&mut system, &mut || rng.gen::<f64>());
     let output = output_formatter::CSVFormatter {
         system: &system,
         output: File::create(&opt.output).expect("Cannot create output file."),
