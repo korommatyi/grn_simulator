@@ -3,8 +3,8 @@ use std::io::Write;
 use crate::system::System;
 
 pub struct CSVFormatter<'a> {
-    system: &'a System,
-    output: std::fs::File,
+    pub(crate) system: &'a System,
+    pub(crate) output: std::fs::File,
 }
 
 impl<'a> CSVFormatter<'a> {
