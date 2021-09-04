@@ -89,7 +89,7 @@ fn create_default_system() -> System {
 
 #[test]
 pub fn test_step_r_1_and_r_2_are_zero() {
-    let system = create_default_system();
+    let mut system = create_default_system();
 
     gillespie_step(&mut system, &mut || 0.0);
 
@@ -100,7 +100,7 @@ pub fn test_step_r_1_and_r_2_are_zero() {
 
 #[test]
 pub fn test_step_r_1_and_r_2_are_one() {
-    let system = create_default_system();
+    let mut system = create_default_system();
 
     gillespie_step(&mut system, &mut || 1.0);
 
@@ -111,7 +111,7 @@ pub fn test_step_r_1_and_r_2_are_one() {
 
 #[test]
 pub fn test_decision_boundary() {
-    let system1 = create_default_system();
+    let mut system1 = create_default_system();
     let condensation = system1.reactions.get(0).unwrap();
     let hydrolysis = system1.reactions.get(1).unwrap();
     let decision_boundary: f64 = condensation.propensity(&system1.state)
@@ -122,7 +122,7 @@ pub fn test_decision_boundary() {
     });
     assert_eq!(system1.last_reaction, 0);
 
-    let system2 = create_default_system();
+    let mut system2 = create_default_system();
     gillespie_step(&mut system2, &mut || -> f64 {
         decision_boundary + std::f64::EPSILON
     });
